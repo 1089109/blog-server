@@ -1,5 +1,26 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import fs from 'fs';
+import path from 'path';
+
+const cwd = process.cwd();
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isProd = nodeEnv === 'production';
+
+const envProductionPath = path.join(cwd, '.env.production');
+const envDevPath = path.join(cwd, '.env');
+
+if (isProd) {
+  if (!fs.existsSync(envProductionPath)) {
+    console.error(`[env] 缺少生产配置文件: ${envProductionPath}`);
+    console.error('[env] 请确认 server/.env.production 已部署，或执行 git pull');
+  } else {
+    dotenv.config({ path: envProductionPath });
+    console.log(`[env] loaded ${envProductionPath}`);
+  }
+} else if (fs.existsSync(envDevPath)) {
+  dotenv.config({ path: envDevPath });
+  console.log(`[env] loaded ${envDevPath}`);
+}
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',

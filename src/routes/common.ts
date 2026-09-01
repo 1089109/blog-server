@@ -98,9 +98,9 @@ router.post('/news', async(req, res) => {
     })
   });
 
-  // 教程数量
+  // 教程数量（与列表一致：仅上线）
   const promise3 = new Promise((resolve, reject) => {
-    const sql = `SELECT count(id) count FROM course`;
+    const sql = `SELECT count(id) count FROM course WHERE status = 1`;
     db.query(sql, (err, data) => {
       if (err) {
         reject(err);
@@ -112,16 +112,16 @@ router.post('/news', async(req, res) => {
     })
   })
 
-  // 教程列表
+  // 教程列表：始终按排序号 + 创建时间；勿复用文章的 sorter，也不要依赖并行中尚未赋值的 courseTotal
   const promise4 = new Promise((resolve, reject) => {
-    // 分类文章第二页的时候，教程列表也加载的第二页数据，两者的数量不一致，所以要注释
-    let pageInfo = resultMap.courseTotal > pageSize ? `${setSorter(sorter, 'course')} LIMIT ${(current - 1) * pageSize}, ${pageSize}` : '';
     const sql = `
       SELECT
         course.id,
         course_name,
         course.status,
         course.create_time,
+        course.update_time,
+        course.sort,
         keyword,
         course.describe,
         thumbnail,
@@ -132,7 +132,9 @@ router.post('/news', async(req, res) => {
       FROM
         course
       LEFT JOIN class_parent cp ON course.class_id = cp.id
-      ${pageInfo}
+      WHERE course.status = 1
+      ORDER BY course.sort DESC, course.create_time DESC
+      LIMIT ${(current - 1) * pageSize}, ${pageSize}
     `;
     db.query(sql, (err, data) => {
       if (err) {

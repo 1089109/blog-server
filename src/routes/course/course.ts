@@ -170,7 +170,7 @@ router.post('/list', (req, res) => {
     ${condition}
     GROUP BY
       course.id
-    ${setSorter(sorter, 'course')}
+    ${setSorter(sorter, 'course') || 'ORDER BY course.sort DESC, course.create_time DESC'}
     LIMIT ${(current - 1) * pageSize}, ${pageSize}
   `;
   const totalSql = `SELECT COUNT(id) total FROM course ${condition}`;

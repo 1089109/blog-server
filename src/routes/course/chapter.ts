@@ -81,7 +81,7 @@ router.get('/view/:id', (req, res) => {
       setLog(req, {
         apiName: '章节详情',
         title: '教程模块',
-        content: `访问了章节：《${firstData.chapterName}》`
+        content: `访问了章节：《${firstData.chapterName}》`,
       })
       resTemplate(codes.success, '查询成功', res, { ...firstData, commentCount });
       return;

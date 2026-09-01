@@ -27,20 +27,42 @@ const getIPAdress = function() {
   }
 }
 
-//获取当前请求用户的IP
-export const getClientIp = function (req: Request) {
-  const headers = req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    // @ts-ignore
-    req.connection.socket.remoteAddress 
-    || req.ip
-    || '';
-    
+/** 规范化 IP：去掉 ::ffff: 前缀 */
+const normalizeIp = (raw?: string | null): string => {
+  if (!raw) return '';
+  let ip = String(raw).trim().replace(/^"|"$/g, '');
+  if (ip.startsWith('::ffff:')) ip = ip.slice(7);
+  if (ip === '::1') ip = '127.0.0.1';
+  return ip;
+};
 
-    let ip = headers.match(/\d+.\d+.\d+.\d+/);
-    ip = ip = ip ? ip.join('.') : null;
-    return ip;
+/** 获取当前请求用户的 IP（优先代理头） */
+export const getClientIp = function (req: Request) {
+  const reqExt = req as Request & { clientIP?: string };
+  if (reqExt.clientIP) {
+    return normalizeIp(reqExt.clientIP);
+  }
+
+  const xff = req.headers['x-forwarded-for'];
+  const fromXff = Array.isArray(xff)
+    ? xff[0]
+    : typeof xff === 'string'
+      ? xff.split(',')[0]
+      : '';
+  const candidates = [
+    fromXff,
+    req.headers['x-real-ip'],
+    req.socket?.remoteAddress,
+    // @ts-ignore legacy
+    req.connection?.remoteAddress,
+    req.ip,
+  ];
+
+  for (const c of candidates) {
+    const ip = normalizeIp(typeof c === 'string' ? c : Array.isArray(c) ? c[0] : '');
+    if (ip) return ip;
+  }
+  return '127.0.0.1';
 };
 
 

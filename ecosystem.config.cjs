@@ -12,6 +12,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 8010,
       },
+      // PM2 5.3+：显式注入生产 env 文件（与代码内 dotenv 双保险）
+      env_file: '.env.production',
     },
   ],
 };

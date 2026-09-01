@@ -21,11 +21,14 @@ import classRouter from './routes/classify';
 export function createApp() {
   const app = express();
 
+  // Nginx / 反向代理后正确识别 req.ip
+  app.set('trust proxy', true);
+
   app.use(
     cors({
       origin: env.corsOrigin,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Real-IP', 'Forwarded'],
       exposedHeaders: ['Set-Cookie'],
       credentials: true,
       maxAge: 3600,

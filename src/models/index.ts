@@ -522,6 +522,9 @@ async function ensureDefaultUserFaces(): Promise<void> {
 }
 
 export async function connectDatabase(): Promise<void> {
+  console.log(
+    `[DB] connecting ${env.db.user}@${env.db.host}:${env.db.port}/${env.db.name}`,
+  );
   await sequelize.authenticate();
   console.log('MySQL connected via Sequelize');
 
